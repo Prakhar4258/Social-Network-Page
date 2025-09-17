@@ -1,9 +1,9 @@
 <?php
 session_start();
 $servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "network";
+$username   = "root";
+$password   = "";
+$dbname     = "network";
 
 $conn = mysqli_connect($servername, $username, $password, $dbname);
 if (!$conn) {
@@ -11,27 +11,25 @@ if (!$conn) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST['email'];
-    $pass  = $_POST['password'];
+    $email    = mysqli_real_escape_string($conn, $_POST['email']);
+    $password = $_POST['password'];
 
-    $sql = "SELECT * FROM userdata WHERE Email='$email' LIMIT 1";
+    
+    $sql    = "SELECT * FROM userdata WHERE email='$email' AND password='$password' LIMIT 1";
     $result = mysqli_query($conn, $sql);
 
-    if ($result && mysqli_num_rows($result) == 1) {
+    if (mysqli_num_rows($result) == 1) {
         $row = mysqli_fetch_assoc($result);
 
-        if ($row['Password'] === $pass) {
-            // success
-            $_SESSION['name']  = $row['Name'];
-            $_SESSION['email'] = $row['Email'];
+        $_SESSION['name']        = $row['name'];
+        $_SESSION['email']       = $row['email'];
+        $_SESSION['profile_pic'] = $row['profile_pic'];
 
-            header("Location: profile.php");
-            exit();
-        } else {
-            echo "❌ Wrong password for this email!";
-        }
+        header("Location: profile.php");
+        exit();
     } else {
-        echo "❌ Email not found in database!";
+        header("Location: profile.php?msg=invalid");
+        exit();
     }
 }
 ?>
