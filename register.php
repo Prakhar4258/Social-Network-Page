@@ -1,45 +1,68 @@
 <?php
+session_start();
 $servername = "localhost";
 $username   = "root";
 $password   = "";
 $dbname     = "network";
 
+
 $conn = mysqli_connect($servername, $username, $password, $dbname);
 if (!$conn) {
-    die("Connection Failed: " . mysqli_connect_error());
+    die("Connection failed: " . mysqli_connect_error());
 }
 
-
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['name'])) {
-    $name     = $_POST['name'];
-    $email    = $_POST['email'];
-    $password = $_POST['password'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $name     = mysqli_real_escape_string($conn, $_POST['name']);
     $dob      = $_POST['dob'];
+    $email    = mysqli_real_escape_string($conn, $_POST['email']);
+    $password = $_POST['password'];
+    $confirm  = $_POST['confirmPassword'];
 
     
-    $check_sql = "SELECT * FROM userdata WHERE Email = '$email'";
-    $result = mysqli_query($conn, $check_sql);
+    if ($password !== $confirm) {
+        header("Location: index.php?msg=password_mismatch");
+        exit();
+    }
 
-    if (mysqli_num_rows($result) > 0) {
-        
+    
+    $check = mysqli_query($conn, "SELECT * FROM userdata WHERE email='$email'");
+    if (mysqli_num_rows($check) > 0) {
         header("Location: index.php?msg=exists");
         exit();
-    } else {
-        
-        $insert_sql = "INSERT INTO userdata (Name, Email, Password, dob) 
-                       VALUES ('$name', '$email', '$password', '$dob')";
+    }
 
-        if (mysqli_query($conn, $insert_sql)) {
-            header("Location: index.php?msg=registered");
-            exit();
-        } else {
-            echo "Error: " . mysqli_error($conn);
+    
+    $profile_pic = "default.png"; 
+    if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] == 0) {
+        $target_dir = "uploads/";
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir, 0777, true);
+        }
+        $file_name   = time() . "_" . basename($_FILES["profile_pic"]["name"]);
+        $target_file = "{$target_dir}{$file_name}";
+        if (move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $target_file)) {
+            $profile_pic = $file_name; 
         }
     }
-}
 
-mysqli_close($conn);
+    
+    $sql = "INSERT INTO userdata (name, dob, email, password, profile_pic) 
+            VALUES ('$name', '$dob', '$email', '$password', '$profile_pic')";
+
+    if (mysqli_query($conn, $sql)) {
+        
+        $_SESSION['name']        = $name;
+        $_SESSION['email']       = $email;
+        $_SESSION['profile_pic'] = $profile_pic;
+
+        header("Location: profile.php");
+        exit();
+    } else {
+        echo "Error: " . mysqli_error($conn);
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
