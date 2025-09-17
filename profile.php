@@ -2,6 +2,7 @@
 session_start();
 $name  = isset($_SESSION['name']) ? htmlspecialchars($_SESSION['name']) : "Guest";
 $email = isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : "guest@example.com";
+$profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : "default.png";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -126,6 +127,39 @@ $email = isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : "gue
   border-radius: 5px;
   cursor: pointer;
 }
+.profile-pic-container {
+    width: 100px;   
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 10px auto; 
+    border: 2px solid #007BFF; 
+    position: relative;
+}
+
+.profile-pic-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.edit-btn {
+    position: absolute; 
+    bottom: 0;
+    right: 0;
+    background: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 3px 5px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 
     </style>
 </head>
@@ -133,10 +167,18 @@ $email = isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : "gue
   <div class="container">
     
     <div class="profile">
-        <h3><?php echo $name; ?></h3>
-        <p><?php echo $email; ?></p>
-        <button id="btn" class="btn">Share Profile</button>
-    </div>
+      <div class="profile-pic-container">
+    <img src="uploads/<?php echo $profile_pic; ?>" alt="Profile Pic" class="profile-pic" id="profilePreview">
+    <form id="updatePicForm" enctype="multipart/form-data">
+        <input type="file" id="newProfilePic" name="newProfilePic" accept="image/*" style="display:none;">
+    </form>
+    <button class="edit-btn" onclick="document.getElementById('newProfilePic').click()">✎</button>
+</div>
+
+    <h3><?php echo $name; ?></h3>
+    <p><?php echo $email; ?></p>
+</div>
+
 
     
     <div style="flex:1;">
